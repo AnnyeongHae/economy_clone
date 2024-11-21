@@ -1,13 +1,13 @@
 import api from '@/api';
 
-const BASE_URL = 'http://localhost:8080'; // Spring Boot API 서버 URL
+const BASE_URL = '/qr'; // Spring Boot API 서버 URL
 
 export default {
   // QR 코드 생성
   async generateQrCode(params) {
     try {
       const { data } = await api.get(
-        `${BASE_URL}/generate-qr`,
+        `${BASE_URL}/generate`,
         {
           params,
           responseType: 'arraybuffer', // 바이너리 데이터를 받기 위함

@@ -15,7 +15,9 @@ const accountObject = ref({
   accountRate: 0, // 기본값
 });
 const myAccount = computed(() => accountObject.value);
-const myBalance = computed(() => myAccount.value.accountBalance);
+const myBalance = computed(
+  () => myAccount.value.accountBalance
+);
 const myRate = computed(() => myAccount.value.accountRate);
 
 const memberObject = ref({});
@@ -24,18 +26,25 @@ const myMember = computed(() => memberObject.value);
 // 이자 초기값 설정
 const myTotalInterest = computed(
   () =>
-    myAccount.value.accountBalance * (myAccount.value.accountRate / 100 / 365)
+    myAccount.value.accountBalance *
+    (myAccount.value.accountRate / 100 / 365)
 );
 const myCurrentInterest = computed(
   () =>
     myAccount.value.accountBalance *
-    (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60)) *
+    (myAccount.value.accountRate /
+      100 /
+      365 /
+      (24 * 60 * 60)) *
     ((hours * 60 + minutes) * 60)
 );
 const myInterest = computed(
   () =>
     myAccount.value.accountBalance *
-    (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60))
+    (myAccount.value.accountRate /
+      100 /
+      365 /
+      (24 * 60 * 60))
 );
 const countInterest = ref(0);
 
@@ -114,14 +123,17 @@ const withdraw = async () => {
   }
 
   try {
-    const response = await accountApi.withdraw(Number(amount));
+    const response = await accountApi.withdraw(
+      Number(amount)
+    );
     const updatedAccount = response.data; // 서버에서 반환된 최신 계좌 정보
     accountObject.value = updatedAccount; // 최신 데이터로 업데이트
     alert(
       `출금 성공! 현재 잔액: ${updatedAccount.accountBalance.toLocaleString()}원`
     );
   } catch (error) {
-    const errorMessage = error.response?.data || '출금에 실패했습니다.';
+    const errorMessage =
+      error.response?.data || '출금에 실패했습니다.';
     alert(errorMessage);
   }
 };
@@ -132,12 +144,18 @@ const load = async () => {
     const accountData = await accountApi.findAccount();
     accountObject.value = accountData;
     console.log('accountObject: ', accountObject.value);
-    console.log('accountObject.accountBalance: ', myAccount.value.accountRate);
+    console.log(
+      'accountObject.accountBalance: ',
+      myAccount.value.accountRate
+    );
 
     const memberData = await memberApi.getMember();
     memberObject.value = memberData;
     console.log('memberObject: ', memberObject.value);
-    console.log('memberObject.memberName: ', myMember.value.memberName);
+    console.log(
+      'memberObject.memberName: ',
+      myMember.value.memberName
+    );
 
     // 데이터 로드 후 countInterest를 초기화
     countInterest.value = myCurrentInterest.value;
@@ -159,18 +177,27 @@ onMounted(() => {
     <div class="card-body">
       <!-- 이율 정보 아이콘 -->
       <div class="interest-info">
-        <span class="info-icon" @click="toggleModal">?</span>
+        <span class="info-icon" @click="toggleModal"
+          >?</span
+        >
       </div>
 
       <!-- 모달 -->
-      <div v-if="showModal" class="modal-backdrop" @click.self="toggleModal">
+      <div
+        v-if="showModal"
+        class="modal-backdrop"
+        @click.self="toggleModal"
+      >
         <div class="modal-content">
           <h3>이율 설명</h3>
           <p>
-            이율은 예금액에 대해 발생하는 금액의 비율입니다. <br />예를 들어,
-            이율이 2.5%라면 1,000,000원에 대해 25,000원의 이자가 발생합니다.
+            이율은 예금액에 대해 발생하는 금액의 비율입니다.
+            <br />예를 들어, 이율이 2.5%라면 1,000,000원에
+            대해 25,000원의 이자가 발생합니다.
           </p>
-          <button class="close-button" @click="toggleModal">닫기</button>
+          <button class="close-button" @click="toggleModal">
+            닫기
+          </button>
         </div>
       </div>
 
@@ -180,20 +207,34 @@ onMounted(() => {
         <strong>{{ myRate }}%</strong>입니다.<br />
       </h5>
       <h2 class="display-4">
-        {{ myBalance ? myBalance.toLocaleString() : 'N/A' }}원
+        {{
+          myBalance ? myBalance.toLocaleString() : 'N/A'
+        }}원
       </h2>
       <!--<p class="text-muted">+124.23922434원 (금일 벌어들인 이자)</p>-->
       <div>
-        <h3 class="text-color">+{{ countInterest.toFixed(4) }}원</h3>
-        <p class="text-muted inline-container">(금일 벌어들인 이자)</p>
+        <h3 class="text-color">
+          +{{ countInterest.toFixed(4) }}원
+        </h3>
+        <p class="text-muted inline-container">
+          (금일 벌어들인 이자)
+        </p>
       </div>
 
       <!-- 입금 및 출금 버튼 -->
       <div class="d-flex justify-content-center mt-4">
-        <button class="btn btn-primary mx-2" @click="depositAmount">
+        <button
+          class="btn btn-primary mx-2"
+          @click="depositAmount"
+        >
           입금
         </button>
-        <button class="btn btn-danger mx-2" @click="withdraw">출금</button>
+        <button
+          class="btn btn-danger mx-2"
+          @click="withdraw"
+        >
+          출금
+        </button>
       </div>
     </div>
   </div>

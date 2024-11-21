@@ -25,6 +25,14 @@ public interface QuestAchieveRepository extends JpaRepository<QuestAchieve, Long
     Boolean existsByQuestAndMember(Quest quest, Member member);
 
     @Query(value = """
+        SELECT COUNT(*)
+        FROM quest_achieve
+        WHERE member_no = :memberNo
+          AND quest_no = :questNo
+    """, nativeQuery = true)
+    Integer countAchievements(@Param("memberNo") Long memberNo, @Param("questNo") Long questNo);
+
+    @Query(value = """
         SELECT *
         FROM QUEST_ACHIEVE
         WHERE member_no = :memberNo

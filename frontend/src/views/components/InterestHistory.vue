@@ -10,11 +10,15 @@ const filteredData = ref([]); // 선택된 연도의 필터링된 데이터
 
 // 월별 데이터를 연도별로 그룹화
 const formatMonthlyData = (monthlyData) => {
-  console.log('formatMonthlyData - monthlyData:', monthlyData);
+  console.log(
+    'formatMonthlyData - monthlyData:',
+    monthlyData
+  );
   return monthlyData.reduce((acc, item) => {
     // 적절한 필드명을 사용
     const dateStr = item.todayDate || item.date;
-    const amount = item.monthlyInterest + item.todayInterest;
+    const amount =
+      item.monthlyInterest + item.todayInterest;
 
     const dateObj = new Date(dateStr);
     if (isNaN(dateObj)) {
@@ -34,9 +38,12 @@ const formatMonthlyData = (monthlyData) => {
 
 // 선택된 연도의 이자 내역 필터링
 const filterInterestData = () => {
-  const yearData = interestHistory.value[selectedYear.value] || [];
+  const yearData =
+    interestHistory.value[selectedYear.value] || [];
   // 최근 달이 위로 오도록 정렬
-  filteredData.value = yearData.sort((a, b) => b.month - a.month);
+  filteredData.value = yearData.sort(
+    (a, b) => b.month - a.month
+  );
   console.log('filteredData.value:', filteredData.value);
 };
 
@@ -80,9 +87,15 @@ watch(selectedYear, () => {
   <div class="interest-history">
     <!-- 상단 이자 정보 -->
     <div class="highlight-section text-center">
-      <p class="subtitle">오늘까지 받은 이자 <span class="emoji">🌟</span></p>
+      <p class="subtitle">
+        오늘까지 받은 이자 <span class="emoji">🌟</span>
+      </p>
       <h1 class="total-amount">
-        {{ totalInterest ? totalInterest.toLocaleString() : 'N/A' }}원
+        {{
+          totalInterest
+            ? totalInterest.toLocaleString()
+            : 'N/A'
+        }}원
       </h1>
     </div>
 
@@ -102,7 +115,10 @@ watch(selectedYear, () => {
     <!-- 테이블 영역 -->
     <div class="interest-table-container">
       <h3 class="year-title">{{ selectedYear }}년</h3>
-      <table class="interest-table" v-if="filteredData.length > 0">
+      <table
+        class="interest-table"
+        v-if="filteredData.length > 0"
+      >
         <thead>
           <tr>
             <th>월</th>
@@ -110,13 +126,18 @@ watch(selectedYear, () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(entry, index) in filteredData" :key="index">
+          <tr
+            v-for="(entry, index) in filteredData"
+            :key="index"
+          >
             <td>{{ entry.month }}월</td>
             <td>{{ entry.amount }}원</td>
           </tr>
         </tbody>
       </table>
-      <p v-else class="empty-message">이자 내역이 없습니다.</p>
+      <p v-else class="empty-message">
+        이자 내역이 없습니다.
+      </p>
     </div>
   </div>
 </template>
@@ -227,3 +248,4 @@ watch(selectedYear, () => {
   }
 }
 </style>
+-->

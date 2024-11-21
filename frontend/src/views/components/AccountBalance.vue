@@ -7,8 +7,8 @@ import { ref, computed, onMounted } from 'vue';
 const showModal = ref(false);
 // const amount = ref('');
 const now = new Date(); // 현재 시각
-//const hours = now.getHours(); // 시 (0 ~ 23)
-//const minutes = now.getMinutes(); // 분 (0 ~ 59)
+const hours = now.getHours(); // 시 (0 ~ 23)
+const minutes = now.getMinutes(); // 분 (0 ~ 59)
 
 const accountObject = ref({
   accountBalance: 0, // 기본값
@@ -30,7 +30,7 @@ const myCurrentInterest = computed(
   () =>
     myAccount.value.accountBalance *
     (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60)) *
-    ((0 * 60 + 40) * 60)
+    ((hours * 60 + minutes) * 60)
 );
 const myInterest = computed(
   () =>

@@ -26,7 +26,4 @@ public class Quest {
     private Date createTableDatetime;
     @Column(nullable = false)
     private Boolean isQr;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "questAchieve_no")
-    private QuestAchieve questAchieve;
 }

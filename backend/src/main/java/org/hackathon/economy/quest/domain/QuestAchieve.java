@@ -28,7 +28,7 @@ public class QuestAchieve {
     @JoinColumn(name = "member_no")
     private Member member;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quest_no") // 외래 키를 명시적으로 설정
     private Quest quest;
 }

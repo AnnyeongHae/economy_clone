@@ -174,3 +174,17 @@ VALUES
 (5, 2, 'X', FALSE);
 
 SELECT * FROM daily_quiz;
+
+
+# QR코드 관련
+CREATE TABLE session (
+                         session_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                         session_key VARCHAR(255) NOT NULL,
+                         expires_at DATETIME NOT NULL,
+                         member_no BIGINT NOT NULL,
+                         FOREIGN KEY (member_no) REFERENCES MEMBER(member_no) ON DELETE CASCADE
+);
+
+SELECT * FRom session;
+SELECT * FROM member;
+SELECT * FROM MEMBER WHERE member_no = 1;

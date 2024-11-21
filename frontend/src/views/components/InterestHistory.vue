@@ -1,3 +1,57 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import dailyInterestApi from '@/api/dailyInterestApi'; // API 호출 모듈 import
+
+// 상태 관리
+const totalInterest = ref(''); // 오늘까지 받은 총 이자
+const selectedYear = ref(new Date().getFullYear()); // 기본값: 현재 연도
+const interestHistory = ref({}); // 연도별 이자 데이터
+const filteredData = ref([]); // 선택된 연도의 필터링된 데이터
+
+// 월별 데이터를 연도별로 그룹화
+const formatMonthlyData = (monthlyData) => {
+  return monthlyData.reduce((acc, item) => {
+    const year = new Date(item.todayDate).getFullYear(); // API 응답의 날짜 필드에서 연도 추출
+    const month = new Date(item.todayDate).getMonth() + 1; // 월 추출 (0부터 시작하므로 +1)
+
+    if (!acc[year]) acc[year] = []; // 해당 연도가 없으면 초기화
+    acc[year].push({ month, amount: item.monthlyInterest }); // 월과 이자 금액 추가
+
+    return acc;
+  }, {});
+};
+
+// 선택된 연도의 이자 내역 필터링
+const filterInterestData = () => {
+  filteredData.value = interestHistory.value[selectedYear.value] || [];
+};
+
+// 데이터 가져오기
+const fetchInterestData = async () => {
+  try {
+    // API 호출: 총 이자와 월별 데이터를 병렬로 가져오기
+    const [total, monthlyData] = await Promise.all([
+      dailyInterestApi.getTotal(), // 총 이자 API 호출
+      dailyInterestApi.getMonthly(), // 월별 이자 API 호출
+    ]);
+
+    // 데이터 설정
+    totalInterest.value = total; // 총 이자
+    interestHistory.value = formatMonthlyData(monthlyData); // 연도별 데이터로 정리
+
+    // 초기 필터링 실행
+    filterInterestData();
+  } catch (error) {
+    console.error('이자 데이터를 가져오는 중 오류 발생:', error);
+  }
+};
+
+// 컴포넌트 로드시 데이터 가져오기
+onMounted(() => {
+  fetchInterestData();
+});
+</script>
+
 <template>
   <div class="interest-history">
     <!-- 상단 이자 정보 -->

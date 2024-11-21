@@ -1,23 +1,57 @@
 <script setup>
-// import { ref, reactive, computed } from 'vue';
-// import { useRoute, useRouter } from 'vue-router';
+import moment from 'moment';
+import { ref, computed } from 'vue';
 
-// const props = defineProps({
-//     memberNo: Number,
-// });
+// 샘플 퀘스트 데이터
+const quests = ref([
+    { questNo: 1, questType: 0, questContent: '일간 퀘스트 1', questPoint: 10, completedDate: '2024-11-20' },
+    { questNo: 2, questType: 1, questContent: '주간 퀘스트 1', questPoint: 20, completedDate: '2024-11-21' },
+    { questNo: 3, questType: 2, questContent: '월간 퀘스트 1', questPoint: 30, completedDate: '2024-11-22' },
+    { questNo: 4, questType: 0, questContent: '일간 퀘스트 2', questPoint: 15, completedDate: '2024-11-21' },
+    { questNo: 5, questType: 1, questContent: '주간 퀘스트 2', questPoint: 25, completedDate: '2024-11-23' },
+]);
 
-// const load = async (memberNo) => {
-//     try {
-//         console.log('memberNo : ', memberNo);
-//         questContentObject.value = await questApi.
-//     }
-// }
+const questTypeImages = {
+    0: require('@/assets/img/team-2.jpg'), // 일간 퀘스트 이미지
+    1: require('@/assets/img/team-3.jpg'), // 주간 퀘스트 이미지
+    2: require('@/assets/img/team-4.jpg'), // 월간 퀘스트 이미지
+    default: require('@/assets/img/team-5.jpg'), // 기본 이미지
+};
+
+// 날짜 상태 관리
+const startDate = ref(''); // 필터 시작 날짜
+const endDate = ref(''); // 필터 종료 날짜
+
+// 완료된 퀘스트 필터링
+const filteredQuests = computed(() => {
+    if (!startDate.value && !endDate.value) {
+        // 시작/종료 날짜가 없으면 모든 퀘스트 표시
+        return quests.value;
+    }
+    return quests.value.filter((quest) => {
+        const completedDate = moment(quest.completedDate);
+        const isAfterStartDate = startDate.value ? completedDate.isSameOrAfter(moment(startDate.value)) : true;
+        const isBeforeEndDate = endDate.value ? completedDate.isSameOrBefore(moment(endDate.value)) : true;
+        return isAfterStartDate && isBeforeEndDate;
+    });
+});
 </script>
 
 <template>
     <div class="card">
-        <div class="card-header pb-0">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
             <h6>완료된 퀘스트</h6>
+            <!-- 날짜 필터 -->
+            <div class="d-flex align-items-center">
+                <div class="me-2">
+                    <label for="start-date" class="form-label">시작 날짜:</label>
+                    <input id="start-date" type="date" v-model="startDate" class="form-control" />
+                </div>
+                <div>
+                    <label for="end-date" class="form-label">종료 날짜:</label>
+                    <input id="end-date" type="date" v-model="endDate" class="form-control" />
+                </div>
+            </div>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
             <div class="table-responsive p-0">
@@ -27,204 +61,37 @@
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">퀘스트</th>
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">타입</th>
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">포인트</th>
-                            <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Employed</th> -->
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 실제 코드로 사용할 것 -->
-                        <tr>
+                        <tr v-for="quest in filteredQuests" :key="quest.questNo">
                             <td>
                                 <div class="d-flex px-2 py-1">
                                     <div>
                                         <!-- 퀘스트 종류에 따른 이미지 -->
-                                        <img src="../../assets/img/team-2.jpg" class="avatar avatar-sm me-3" alt="user1" />
+                                        <img :src="questTypeImages[quest.questType] || questTypeImages.default" class="avatar avatar-sm me-3" alt="quest" />
                                     </div>
                                     <div class="d-flex flex-column justify-content-center">
                                         <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
+                                        <h6 class="mb-0 text-sm">{{ quest.questContent }}</h6>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
+                                <p class="text-xs font-weight-bold mb-0 text-secondary">
+                                    {{ quest.questType === 0 ? '일간' : quest.questType === 1 ? '주간' : '월간' }}
+                                </p>
                             </td>
-
                             <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
+                                <span class="text-secondary text-xs font-weight-bold">{{ quest.questPoint }}P</span>
                             </td>
-
                             <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
+                                <button class="badge bg-gradient-success border-0">완료</button>
                             </td>
                         </tr>
-
-                        <tr>
-                            <td>
-                                <div class="d-flex px-2 py-1">
-                                    <div>
-                                        <!-- 퀘스트 종류에 따른 이미지 -->
-                                        <img src="../../assets/img/team-2.jpg" class="avatar avatar-sm me-3" alt="user1" />
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
-                            </td>
-
-                            <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
-                            </td>
-
-                            <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="d-flex px-2 py-1">
-                                    <div>
-                                        <img src="../../assets/img/team-3.jpg" class="avatar avatar-sm me-3" alt="user2" />
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
-                            </td>
-
-                            <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
-                            </td>
-
-                            <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="d-flex px-2 py-1">
-                                    <div>
-                                        <img src="../../assets/img/team-4.jpg" class="avatar avatar-sm me-3" alt="user3" />
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
-                            </td>
-
-                            <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
-                            </td>
-
-                            <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="d-flex px-2 py-1">
-                                    <div>
-                                        <img src="../../assets/img/team-3.jpg" class="avatar avatar-sm me-3" alt="user4" />
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
-                            </td>
-
-                            <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
-                            </td>
-
-                            <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="d-flex px-2 py-1">
-                                    <div>
-                                        <!-- 퀘스트 종류에 따른 이미지 -->
-                                        <img src="../../assets/img/team-2.jpg" class="avatar avatar-sm me-3" alt="user1" />
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
-                            </td>
-
-                            <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
-                            </td>
-
-                            <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="d-flex px-2 py-1">
-                                    <div>
-                                        <img src="../../assets/img/team-4.jpg" class="avatar avatar-sm me-3" alt="user6" />
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <!-- 퀘스트 내용 -->
-                                        <h6 class="mb-0 text-sm">친환경 전문 매장을 방문하여 제품을 그린카드로 구매하세요!</h6>
-                                        <!-- 퀘스트 세부 내용 -->
-                                        <p class="text-xs text-secondary mb-0">나무 1그루🌲를 보호하고 6.6kg의 탄소☁️를 상쇄할 수 있습니다!</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0">녹색 소비</p>
-                                <p class="text-xs text-secondary mb-0"></p>
-                            </td>
-
-                            <td class="align-middle text-center">
-                                <span class="text-secondary text-xs font-weight-bold">50P</span>
-                            </td>
-
-                            <td class="align-middle text-center text-sm">
-                                <span class="badge bg-gradient-success"> 완료!</span>
-                            </td>
+                        <tr v-if="filteredQuests.length === 0">
+                            <td colspan="4" class="text-center">해당 조건에 완료된 퀘스트가 없습니다.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -232,3 +99,10 @@
         </div>
     </div>
 </template>
+
+<style>
+/* 테이블 및 폼 스타일링 */
+.form-label {
+    margin-right: 10px;
+}
+</style>

@@ -28,12 +28,7 @@ public class QuestAchieve {
     @JoinColumn(name = "member_no")
     private Member member;
 
-    @OneToMany(mappedBy = "questAchieve", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Quest> quests = new ArrayList<>();
-
-    /* 연관관계 편의 메서드 */
-    public void setQuest(Quest quest) {
-        quests.add(quest);
-    }
-
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "quest_no") // 외래 키를 명시적으로 설정
+    private Quest quest;
 }

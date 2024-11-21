@@ -5,7 +5,7 @@ import { ref, computed, onMounted } from 'vue';
 
 // 모달 표시 여부
 const showModal = ref(false);
-
+// const amount = ref('');
 const now = new Date(); // 현재 시각
 const hours = now.getHours(); // 시 (0 ~ 23)
 const minutes = now.getMinutes(); // 분 (0 ~ 59)
@@ -38,7 +38,6 @@ const myInterest = computed(
     (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60))
 );
 const countInterest = ref(0);
-
 
 // 매초마다 이자금을 더함
 const startInterestCount = () => {
@@ -91,6 +90,49 @@ const withdraw = () => {
   alert('출금 기능이 호출되었습니다.');
 };
 
+
+const deposit = async () => {
+  const amount = parseFloat(prompt('입금할 금액을 입력하세요:'));
+  if (!amount || isNaN(amount) || Number(amount) <= 0) {
+    alert('유효한 금액을 입력해주세요.');
+    return;
+  }
+
+  try {
+    const response = await accountApi.deposit(Number(amount));
+    const updatedAccount = response.data; // 서버에서 반환된 최신 계좌 정보
+    accountObject.value = updatedAccount; // 최신 데이터로 업데이트
+    alert(
+      `입금 성공! 현재 잔액: ${updatedAccount.accountBalance.toLocaleString()}원`
+    );
+  } catch (error) {
+    const errorMessage = error.response?.data || '입금에 실패했습니다.';
+    alert(errorMessage);
+  }
+};
+
+// 출금 기능 함수
+const withdraw = async () => {
+  const amount = prompt('출금할 금액을 입력하세요:');
+  if (!amount || isNaN(amount) || Number(amount) <= 0) {
+    alert('유효한 금액을 입력해주세요.');
+    return;
+  }
+
+  try {
+    const response = await accountApi.withdraw(Number(amount));
+    const updatedAccount = response.data; // 서버에서 반환된 최신 계좌 정보
+    accountObject.value = updatedAccount; // 최신 데이터로 업데이트
+    alert(
+      `출금 성공! 현재 잔액: ${updatedAccount.accountBalance.toLocaleString()}원`
+    );
+  } catch (error) {
+    const errorMessage = error.response?.data || '출금에 실패했습니다.';
+    alert(errorMessage);
+  }
+};
+
+// 계좌 및 사용자 정보 로드
 const load = async () => {
   try {
     const accountData = await accountApi.findAccount();
@@ -113,11 +155,9 @@ const load = async () => {
 // 컴포넌트가 마운트될 때 카운트다운 시작
 onMounted(() => {
   load();
-
   startInterestCount();
 });
 </script>
-
 
 <template>
   <div class="card account-balance-card text-center mb-4">

@@ -49,13 +49,11 @@ public class MemberController {
     //로그인
     @PostMapping("/login")
     public ResponseEntity<Long> login(@RequestBody LoginDTO loginDTO, HttpSession session) {
-        System.out.println("sessionLogin = " + session);
         System.out.println("로그인 요청 수신: " + loginDTO);
         Member loginResult = memberService.login(loginDTO);
         if (loginResult != null) {
             //로그인 성공
             session.setAttribute("memberEmail", loginResult.getMemberEmail());
-            System.out.println("session.getAttribute(\"memberEmail\") = " + session.getAttribute("memberEmail"));
             return ResponseEntity.ok(loginResult.getMemberNo());
         }
         //로그인 실패
@@ -77,7 +75,6 @@ public class MemberController {
     @GetMapping("/")
     public ResponseEntity<MemberUtil> getMember(HttpSession session) {
         String memberEmail = (String) session.getAttribute("memberEmail");
-        System.out.println(session.getAttribute("memberEmail"));
         if(memberEmail != null) {
             Member member = memberService.findByEmail(memberEmail);
             MemberUtil memberUtil = MemberUtil.builder()
@@ -105,14 +102,6 @@ public class MemberController {
     public ResponseEntity<Void> delete(@PathVariable Long no) {
         memberService.delete(no);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/report")
-    public ResponseEntity<Long> authenticate(HttpSession session){
-        System.out.println("session = " + session);
-        System.out.println("session.getAttribute(\"memberEmail\") = " + session.getAttribute("memberEmail"));
-        Long accountNo = authenticationService.getAccountNo(session);
-        return ResponseEntity.ok(accountNo);
     }
 }
 

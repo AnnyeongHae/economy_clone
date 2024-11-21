@@ -1,3 +1,5 @@
+<script setup></script>
+
 <template>
   <div class="background-container">
     <!-- 페이지 헤더 -->
@@ -98,17 +100,11 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'AboutPage',
-};
-</script>
-
 <style scoped>
 /* 공통 스타일 */
 .background-container {
   font-family: 'Roboto', Arial, sans-serif;
-  line-height: 1.8;
+  line-height: 1.6;
   color: #333;
   margin: 0;
   padding: 0;
@@ -116,36 +112,39 @@ export default {
 
 /* 헤더 스타일 */
 .header-section {
-  color: white;
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 4rem 1rem;
 }
 
 .header-section h1 {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: bold;
   margin-bottom: 1rem;
 }
 
 .header-section p {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   margin: 0;
 }
 
 /* 콘텐츠 섹션 */
 .content-section {
-  padding: 2.5rem 10%;
+  padding: 3rem 10%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
 
 .content-section h2 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: #4caf50;
   margin-bottom: 1.5rem;
   font-weight: bold;
 }
 
 .content-section p {
-  font-size: 1rem;
+  font-size: 1.1rem;
   margin-bottom: 1.5rem;
 }
 
@@ -159,10 +158,18 @@ export default {
 }
 
 /* 특징 섹션 */
+.features-section {
+  padding: 3rem 10%;
+  /* background-color: #e8f5e9; */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
 .features-section h2 {
-  padding: 2.5rem 10%; /* 다른 섹션과 동일한 패딩 */
   text-align: left;
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: #4caf50;
   margin-bottom: 1.5rem;
   font-weight: bold;
@@ -170,10 +177,10 @@ export default {
 
 .features-section ul {
   list-style: none;
-  padding-left: 5rem;
+  padding-left: 0;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .features-section li {
@@ -181,7 +188,7 @@ export default {
   margin-bottom: 1.5rem;
   padding-left: 2rem;
   position: relative;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .features-section li::before {
@@ -196,22 +203,23 @@ export default {
 .footer-section {
   background-color: #f9f9f9;
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 4rem 1rem;
+  /* border-top: 5px solid #4caf50; */
 }
 
 .footer-section h2 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   margin-bottom: 1rem;
 }
 
 .cta-button {
   display: inline-block;
-  padding: 1rem 2rem;
+  padding: 1rem 2.5rem;
   background: linear-gradient(135deg, #4caf50, #81c784);
   color: white;
   text-decoration: none;
   border-radius: 50px;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   transition:
     transform 0.3s ease,
     background-color 0.3s ease;

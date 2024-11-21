@@ -13,7 +13,7 @@ public class DailyQuizScheduler {
     }
 
     // 30초마다 새로운 퀴즈 업데이트
-    @Scheduled(cron = "0/30 * * * * *")
+    //    @Scheduled(cron = "0/30 * * * * *")
     public void updateDailyQuizTask() {
         dailyQuizService.updateDailyQuiz();
         System.out.println("Running scheduled task: Updating daily quiz");

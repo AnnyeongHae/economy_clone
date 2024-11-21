@@ -6,6 +6,7 @@ import Carousel from './components/Carousel.vue';
 
 import TodayQuest from './components/TodayQuest.vue';
 import accountApi from '@/api/accountApi';
+import dailyInterestApi from '@/api/dailyInterestApi';
 import { ref, onMounted, computed } from 'vue';
 
 const now = new Date(); // 현재 시각
@@ -19,7 +20,14 @@ const accountObject = ref({
 const myAccount = computed(() => accountObject.value);
 //const formattedInterest = ref(0);
 //const myBalance = computed(() => myAccount.value.accountBalance);
-//const myRate = computed(() => myAccount.value.accountRate);
+const myRate = computed(() => myAccount.value.accountRate);
+
+// const monthlyInterestObject = ref({});
+// const monthlyInterest = computed(() => monthlyInterestObject.value);
+// const monthlyInterestMonthListObject = ref({});
+// const monthlyInterestMonthList = computed(() => monthlyInterestMonthListObject.value);
+const dailyMonthlyInterestObject = ref([]);
+
 
 // 이자 초기값 설정
 const myTotalInterest = computed(
@@ -104,6 +112,56 @@ const getRandomTip = () => {
 
 const dailyTip = ref(getRandomTip());
 
+
+// 차트 데이터
+const chartData = ref({
+  labels: [],
+  datasets: [
+    {
+      label: "월별 이자",
+      data: []
+    }
+  ]
+});
+
+const updateChartData = async () => {
+  try {
+    const monthlyData = await dailyInterestApi.getMonthly();
+    console.log('Monthly Data:', monthlyData);
+
+    // 각 월별 최신 데이터만 사용
+    const monthlyMap = new Map();
+    monthlyData.forEach(item => {
+      const month = new Date(item.todayDate).format("YYYY-MM-DD");
+      // 같은 월의 데이터가 있으면 항상 새로운 데이터로 덮어씀
+      monthlyMap.set(month, item.monthlyInterest);
+    });
+
+    // 데이터 배열로 변환
+    const months = Array.from(monthlyMap.keys()).sort((a, b) => a - b);
+    const amounts = months.map(month => monthlyMap.get(month));
+    const labelsss = months.map(month => `${month + 1}월`);
+
+    console.log('Mapped months:', months);
+    console.log('Mapped amounts:', amounts);
+    console.log('Mapped labels:', labelsss);
+
+    // 차트 데이터 업데이트
+    chartData.value = {
+      labels: labelsss,
+      datasets: [
+        {
+          label: "월별 이자",
+          data: amounts,
+        }
+      ]
+    };
+    
+  } catch (error) {
+    console.error('Error updating chart data:', error);
+  }
+};
+
 const load = async () => {
   try {
     const accountData = await accountApi.findAccount();
@@ -114,6 +172,10 @@ const load = async () => {
     // 데이터 로드 후 countInterest를 초기화
     countInterest.value = myCurrentInterest.value;
     //formattedInterest.value = `+${(1234.5678).toFixed(4)}원`;
+
+    const dailyMonthlyInterestData = await dailyInterestApi.getMonthly();
+    dailyMonthlyInterestObject.value = dailyMonthlyInterestData;
+    console.log('dailyMonthlyInterestObject: ', dailyMonthlyInterestObject.value);
   } catch (error) {
     console.error('Error finding account: ', error);
   }
@@ -123,6 +185,8 @@ onMounted(() => {
     load();
     startInterestCount();
     dailyTip.value = getRandomTip();
+    updateChartData();
+    console.log('chartData: ', chartData);
 });
 </script>
 <template>
@@ -158,9 +222,7 @@ onMounted(() => {
                         <mini-statistics-card
                             title="금일 벌어들인 이자"
                             :value="`+${countInterest.toFixed(4)}원`"
-                            description="<span
-                class='text-sm font-weight-bolder text-danger'
-                >-2%</span> since last quarter"
+                            :description="`<span class='text-md font-weight-bolder text-danger'>+${myRate}%</span>  &nbsp  퀘스트로 더 높은 이율을 받아보세요!`"
                             :icon="{
                                 component: 'ni ni-paper-diploma',
                                 background: 'bg-gradient-success',
@@ -196,7 +258,7 @@ onMounted(() => {
                                     datasets: [
                                         {
                                             label: 'Mobile Apps',
-                                            data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+                                            data: [247, 231, 248, 240, 249, 233, 243, 244, 236,245, 237, 246],
                                         },
                                     ],
                                 }"

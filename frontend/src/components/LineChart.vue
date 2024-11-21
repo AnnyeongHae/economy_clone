@@ -5,55 +5,55 @@
 </template>
 
 <script>
-import { Chart, registerables } from 'chart.js'
-import { defineComponent, onMounted, onBeforeUnmount, watch, ref } from 'vue'
+import { Chart, registerables } from "chart.js";
+import { defineComponent, onMounted, onBeforeUnmount, watch, ref } from "vue";
 
-Chart.register(...registerables)
+Chart.register(...registerables);
 
 export default defineComponent({
-  name: 'LineChart',
+  name: "LineChart",
   props: {
     chartData: {
       type: Object,
-      required: true
+      required: true,
     },
     options: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   setup(props) {
-    const chartInstance = ref(null)
-    const canvas = ref(null)
+    const chartInstance = ref(null);
+    const canvas = ref(null);
 
     const canvasRef = (el) => {
-      canvas.value = el
-    }
+      canvas.value = el;
+    };
 
     const createChart = () => {
       if (chartInstance.value) {
-        chartInstance.value.destroy()
+        chartInstance.value.destroy();
       }
 
       if (canvas.value && props.chartData) {
-        const ctx = canvas.value.getContext('2d')
+        const ctx = canvas.value.getContext("2d");
         chartInstance.value = new Chart(ctx, {
-          type: 'line',
+          type: "line",
           data: {
             ...props.chartData,
-            datasets: props.chartData.datasets.map(dataset => ({
+            datasets: props.chartData.datasets.map((dataset) => ({
               ...dataset,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderColor: "#10b981",
+              backgroundColor: "rgba(16, 185, 129, 0.1)",
               borderWidth: 2,
-              pointBackgroundColor: '#10b981',
-              pointBorderColor: '#ffffff',
+              pointBackgroundColor: "#10b981",
+              pointBorderColor: "#ffffff",
               pointBorderWidth: 2,
               pointRadius: 4,
               pointHoverRadius: 6,
               fill: true,
-              tension: 0.4
-            }))
+              tension: 0.4,
+            })),
           },
           options: {
             responsive: true,
@@ -63,76 +63,76 @@ export default defineComponent({
                 top: 20,
                 right: 20,
                 bottom: 20,
-                left: 20
-              }
+                left: 20,
+              },
             },
             plugins: {
               legend: {
-                display: false
+                display: false,
               },
               tooltip: {
-                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                titleColor: '#ffffff',
-                bodyColor: '#ffffff',
+                backgroundColor: "rgba(15, 23, 42, 0.9)",
+                titleColor: "#ffffff",
+                bodyColor: "#ffffff",
                 padding: 12,
                 cornerRadius: 8,
                 displayColors: false,
                 callbacks: {
-                  ...props.options?.plugins?.tooltip?.callbacks
-                }
-              }
+                  ...props.options?.plugins?.tooltip?.callbacks,
+                },
+              },
             },
             scales: {
               x: {
                 grid: {
-                  display: false
+                  display: false,
                 },
                 ticks: {
-                  color: '#64748b',
+                  color: "#64748b",
                   font: {
-                    size: 12
-                  }
-                }
+                    size: 12,
+                  },
+                },
               },
               y: {
                 beginAtZero: true,
                 grid: {
-                  color: 'rgba(226, 232, 240, 0.6)'
+                  color: "rgba(226, 232, 240, 0.6)",
                 },
                 ticks: {
-                  color: '#64748b',
+                  color: "#64748b",
                   font: {
-                    size: 12
+                    size: 12,
                   },
                   padding: 8,
-                  callback: props.options?.scales?.y?.ticks?.callback
-                }
-              }
+                  callback: props.options?.scales?.y?.ticks?.callback,
+                },
+              },
             },
-            ...props.options
-          }
-        })
+            ...props.options,
+          },
+        });
       }
-    }
+    };
 
     onMounted(() => {
-      createChart()
-    })
+      createChart();
+    });
 
     onBeforeUnmount(() => {
       if (chartInstance.value) {
-        chartInstance.value.destroy()
+        chartInstance.value.destroy();
       }
-    })
+    });
 
-    watch(() => props.chartData, createChart, { deep: true })
-    watch(() => props.options, createChart, { deep: true })
+    watch(() => props.chartData, createChart, { deep: true });
+    watch(() => props.options, createChart, { deep: true });
 
     return {
-      canvasRef
-    }
-  }
-})
+      canvasRef,
+    };
+  },
+});
 </script>
 
 <style scoped>

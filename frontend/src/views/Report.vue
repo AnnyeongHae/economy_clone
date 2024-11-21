@@ -299,6 +299,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import LineChart from "../components/LineChart.vue";
 import BarChart from "../components/BarChart.vue";
+import api from "@/api";
 export default {
   name: "ReportView",
   components: {
@@ -541,7 +542,8 @@ export default {
             }
           : getDateRange(selectedPeriod.value));
       try {
-        const response = await axios.post("http://localhost:8080/api/report", {
+        console.log("accountNo/report", accountNo.value);
+        const response = await api.post("/report", {
           period: selectedPeriod.value,
           page: page - 1,
           accountNo: accountNo.value,
@@ -609,13 +611,10 @@ export default {
       try {
         const formattedDate = format(new Date(date), "yyyy-MM-dd");
         console.log("Fetching quest details for date:", formattedDate);
-        const response = await axios.post(
-          "http://localhost:8080/api/report/details",
-          {
-            accountNo: accountNo.value,
-            date: formattedDate,
-          }
-        );
+        const response = await api.post("/report/details", {
+          accountNo: accountNo.value,
+          date: formattedDate,
+        });
         // response.data가 바로 questDetails 배열인 경우를 처리
         if (response.data && Array.isArray(response.data)) {
           questDetails.value = response.data;
@@ -739,22 +738,20 @@ export default {
     // 컴포넌트 마운트 시 데이터 로드
     onMounted(async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:8080/api/member/report"
-        );
-        if (response.data && typeof response.data.accountNo === "number") {
-          accountNo.value = response.data.accountNo;
+        const response = await api.post("/member/report");
+        console.log("response:", response);
+        if (typeof response.data === "number") {
+          accountNo.value = response.data;
+          console.log("accountNo:", accountNo.value);
           // 기존의 초기 데이터 로드 함수들을 여기서 호출
           await fetchReportData();
-          await fetchQuestDetails();
         }
       } catch (error) {
-        console.error("Error fetching report data:", error);
+        console.error("Error", error);
       }
     });
     // 템플릿에서 사용할 메서드 및 데이터 반환
     return {
-      accountNo,
       memberData,
       selectedPeriod,
       periods,

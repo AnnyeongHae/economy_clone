@@ -31,7 +31,7 @@ public class QuestAuthService {
         // 멤버 객체 가져오기
         Member member = memberAuthRepository.findById(memberNo).orElseThrow();
 
-        List<Quest> activeQuests = questRepositoryInterface.findByIsActiveAndIsQr(true, false);
+        List<Quest> activeQuests = questRepositoryInterface.findQuestsByIsActiveAndQuestTypeOrderByQuestFrequencyAsc(true, 1);
 
         for (Quest quest : activeQuests) {
             // 이미 달성한 퀘스트인지 확인

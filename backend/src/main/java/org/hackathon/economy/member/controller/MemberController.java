@@ -104,6 +104,14 @@ public class MemberController {
         memberService.delete(no);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/report")
+    public ResponseEntity<Long> authenticate(HttpSession session){
+        System.out.println("session = " + session);
+        System.out.println("session.getAttribute(\"memberEmail\") = " + session.getAttribute("memberEmail"));
+        Long accountNo = authenticationService.getAccountNo(session);
+        return ResponseEntity.ok(accountNo);
+    }
 }
 
 @Data

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface QuestRepositoryInterface extends JpaRepository<Quest, Long> {
-    //List<Quest> findQuestsByIsActiveNotAndQuestTypeOrderByQuestFrequencyAsc(int questType);
+//    List<Quest> findQuestsByIsActiveNotAndQuestTypeOrderByQuestFrequencyAsc(int questType);
 
     List<Quest> findQuestsByIsActiveAndQuestTypeOrderByQuestFrequencyAsc(boolean isActive, int questType);
 }

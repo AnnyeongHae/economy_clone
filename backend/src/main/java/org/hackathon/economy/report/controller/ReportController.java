@@ -20,6 +20,10 @@ public class ReportController {
     @PostMapping()
     public ResponseEntity<ReportResponse> getReport(@RequestBody HashMap<String, Object> payload) {
 
+        for (Object value : payload.values()) {
+            System.out.println("value = " + value);
+        }
+
         String period = (String) payload.get("period");
         LocalDate startDate = LocalDate.parse(payload.get("startDate").toString());
         LocalDate endDate = LocalDate.parse(payload.get("endDate").toString());

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hackathon.economy.account.domain.Account;
+import org.hackathon.economy.greenttransaction.domain.GreenTransaction;
 import org.hackathon.economy.quest.domain.Quest;
 import org.hackathon.economy.quest.domain.QuestAchieve;
 import org.hibernate.annotations.ColumnDefault;
@@ -41,7 +42,7 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestAchieve> questAchieves = new ArrayList<>();
-    
+
     @PrePersist
     protected void onCreate() {
         this.createDate = new Date(); // 현재 시간 자동 설정

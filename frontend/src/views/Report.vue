@@ -580,9 +580,9 @@ export default {
     // 퀘스트 유형 변환 함수 추가
     const getQuestType = (type) => {
       const types = {
-        1: "일일 퀘스트",
-        2: "주간 퀘스트",
-        3: "월간 퀘스트",
+        0: "일일 퀘스트",
+        1: "주간 퀘스트",
+        2: "월간 퀘스트",
       };
       return types[type] || "기타 퀘스트";
     };

@@ -5,8 +5,53 @@ import Carousel from './components/Carousel.vue';
 // import CategoriesList from './components/CategoriesList.vue';
 
 import TodayQuest from './components/TodayQuest.vue';
+import accountApi from '@/api/accountApi';
+import { ref, onMounted, computed } from 'vue';
 
-import { ref, onMounted } from 'vue';
+const now = new Date(); // 현재 시각
+const hours = now.getHours(); // 시 (0 ~ 23)
+const minutes = now.getMinutes(); // 분 (0 ~ 59)
+
+const accountObject = ref({
+  accountBalance: 0, // 기본값
+  accountRate: 0, // 기본값
+});
+const myAccount = computed(() => accountObject.value);
+//const formattedInterest = ref(0);
+//const myBalance = computed(() => myAccount.value.accountBalance);
+//const myRate = computed(() => myAccount.value.accountRate);
+
+// 이자 초기값 설정
+const myTotalInterest = computed(
+  () =>
+    myAccount.value.accountBalance * (myAccount.value.accountRate / 100 / 365)
+);
+const myCurrentInterest = computed(
+  () =>
+    myAccount.value.accountBalance *
+    (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60)) *
+    ((hours * 60 + minutes) * 60)
+);
+const myInterest = computed(
+  () =>
+    myAccount.value.accountBalance *
+    (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60))
+);
+const countInterest = ref(0);
+
+
+// 매초마다 이자금을 더함
+const startInterestCount = () => {
+  const interval = setInterval(() => {
+    if (countInterest.value < myTotalInterest.value) {
+      countInterest.value += myInterest.value;
+    } else {
+      clearInterval(interval); // 카운트가 myTotalInterest에 도달하면 타이머 종료
+    }
+  }, 1000); // 1000ms(1초)마다 실행
+};
+
+
 
 const tips = [
     { 
@@ -59,7 +104,24 @@ const getRandomTip = () => {
 
 const dailyTip = ref(getRandomTip());
 
+const load = async () => {
+  try {
+    const accountData = await accountApi.findAccount();
+    accountObject.value = accountData;
+    console.log('accountObject: ', accountObject.value);
+    console.log('accountObject.accountBalance: ', myAccount.value.accountRate);
+
+    // 데이터 로드 후 countInterest를 초기화
+    countInterest.value = myCurrentInterest.value;
+    //formattedInterest.value = `+${(1234.5678).toFixed(4)}원`;
+  } catch (error) {
+    console.error('Error finding account: ', error);
+  }
+};
+
 onMounted(() => {
+    load();
+    startInterestCount();
     dailyTip.value = getRandomTip();
 });
 </script>
@@ -95,7 +157,7 @@ onMounted(() => {
                     <div class="col-lg-3 col-md-6 col-12">
                         <mini-statistics-card
                             title="금일 벌어들인 이자"
-                            value="+3,462"
+                            :value="`+${countInterest.toFixed(4)}원`"
                             description="<span
                 class='text-sm font-weight-bolder text-danger'
                 >-2%</span> since last quarter"

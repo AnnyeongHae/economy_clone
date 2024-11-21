@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Session {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name="session_id")
     private Long sessionId; // 세션 ID (Primary Key)
 

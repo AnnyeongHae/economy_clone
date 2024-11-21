@@ -33,4 +33,6 @@ public class QuestService {
     public List<Quest> getActiveMonthlyQuests() {
         return questRepository.getActiveMonthlyQuests();
     }
+
+    public Quest getRecommendQuest() { return questRepository.getRecommendQuest(); }
 }

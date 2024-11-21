@@ -1,18 +1,11 @@
 package org.hackathon.economy.quest.controller;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.hackathon.economy.account.domain.Account;
-import org.hackathon.economy.account.service.AccountService;
-import org.hackathon.economy.member.domain.Member;
-import org.hackathon.economy.member.service.AuthenticationService;
 import org.hackathon.economy.quest.domain.Quest;
-import org.hackathon.economy.quest.domain.QuestAchieve;
 import org.hackathon.economy.quest.service.QuestAuthService;
 import org.hackathon.economy.quest.service.QuestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,5 +52,10 @@ public class QuestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("error" + e.getMessage());
         }
+    }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<Quest> getRecommendQuest() {
+        return ResponseEntity.ok(questService.getRecommendQuest());
     }
 }

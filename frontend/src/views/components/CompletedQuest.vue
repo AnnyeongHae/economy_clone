@@ -4,7 +4,7 @@ import 'flatpickr/dist/flatpickr.min.css';
 import moment from 'moment';
 import { ref, onMounted } from 'vue';
 import questApi from '@/api/achieveQuestApi';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 
 // 완료된 퀘스트 상태
 const quests = ref([]); // API로부터 가져올 데이터
@@ -36,7 +36,7 @@ const loadQuests = async () => {
         filteredQuests.value = data; //기본적으로 모든 데이터 표시
     } catch (error) {
         console.error('퀘스트 로드 실패:', error);
-        Swal.fire('에러', '퀘스트 데이터를 불러오는 데 실패했습니다.', 'error');
+        // Swal.fire('에러', '완료된 퀘스트 데이터를 불러오는 데 실패했습니다.', 'error');
     }
 };
 

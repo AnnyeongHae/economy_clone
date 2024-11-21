@@ -47,8 +47,11 @@ public class QuizService {
     public List<QuizOption> getQuizOptions(Long quizPk) {
         Quiz quiz = quizRepository.findById(quizPk)
                 .orElseThrow(() -> new RuntimeException("Quiz not found."));
-        return quizOptionRepository.findQuizOptionsByQuiz(quiz);
+        List<QuizOption> options = quizOptionRepository.findQuizOptionsByQuiz(quiz);
+        options.size(); // LazyInitialization 방지
+        return options;
     }
+
 
     // 사용자가 오늘의 퀴즈를 완료했는지 확인
     @Transactional

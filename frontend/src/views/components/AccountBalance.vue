@@ -85,7 +85,6 @@ async function depositAmount() {
   }
 }
 
-
 // const deposit = async () => {
 //   const amount = parseFloat(prompt('입금할 금액을 입력하세요:'));
 //   if (!amount || isNaN(amount) || Number(amount) <= 0) {
@@ -191,7 +190,9 @@ onMounted(() => {
 
       <!-- 입금 및 출금 버튼 -->
       <div class="d-flex justify-content-center mt-4">
-        <button class="btn btn-primary mx-2" @click="depositAmount">입금</button>
+        <button class="btn btn-primary mx-2" @click="depositAmount">
+          입금
+        </button>
         <button class="btn btn-danger mx-2" @click="withdraw">출금</button>
       </div>
     </div>

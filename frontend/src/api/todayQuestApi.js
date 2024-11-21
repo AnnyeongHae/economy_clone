@@ -26,4 +26,10 @@ export default {
         const { data } = await api.get(`${BASE_URL}/active/monthly`);
         return data;
     },
+
+    //거래내역으로 인증
+    async processQuestAchievements(memberNo) {
+        const { data } = await api.post(`${BASE_URL}/process`, memberNo);
+        return data;
+    },
 };

@@ -15,10 +15,10 @@ public interface QuestAchieveRepository extends JpaRepository<QuestAchieve, Long
 
     @Query(value = """
         SELECT COUNT(*)
-        FROM quest_achieve
+        FROM QUEST_ACHIEVE
         WHERE member_no = :memberNo
           AND quest_no = :questNo
-          AND achieve_date_time BETWEEN (NOW() - INTERVAL 30 SECOND) AND NOW()
+          AND achieveDateTime BETWEEN (NOW() - INTERVAL 30 SECOND) AND NOW()
         """, nativeQuery = true)
     Integer countRecentAchievement(@Param("memberNo") Long memberNo, @Param("questNo") Long questNo);
 
@@ -26,25 +26,25 @@ public interface QuestAchieveRepository extends JpaRepository<QuestAchieve, Long
 
     @Query(value = """
         SELECT *
-        FROM quest_achieve
+        FROM QUEST_ACHIEVE
         WHERE member_no = :memberNo
     """, nativeQuery = true)
     List<QuestAchieve> getTotal(@Param("memberNo") Long memberNo);
 
     @Query(value = """
         SELECT *
-        FROM quest_achieve
+        FROM QUEST_ACHIEVE
         WHERE member_no = :memberNo
-        AND DATE_FORMAT(achieve_date_time, "%Y-%m-%d") = CURDATE()
+        AND DATE_FORMAT(achieveDateTime, "%Y-%m-%d") = CURDATE()
     """, nativeQuery = true)
     List<QuestAchieve> getToday(@Param("memberNo") Long memberNo);
 
     @Query(value = """
         SELECT *
-        FROM quest_achieve
+        FROM QUEST_ACHIEVE
         WHERE member_no = :memberNo
         AND 
-          date_format(achieve_date_time,'%Y-%m-%d')
+          date_format(achieveDateTime,'%Y-%m-%d')
         BETWEEN
          (SELECT ADDDATE(CURDATE(), - WEEKDAY(CURDATE()) + 0 ))
         AND
@@ -54,10 +54,10 @@ public interface QuestAchieveRepository extends JpaRepository<QuestAchieve, Long
 
     @Query(value = """
         SELECT *
-        FROM quest_achieve
+        FROM QUEST_ACHIEVE
         WHERE member_no = :memberNo
         AND 
-          date_format(achieve_date_time,'%Y-%m-%d')
+          date_format(achieveDateTime,'%Y-%m-%d')
         between 
           date_format(now(), '%Y-%m-01') 
         and 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.List;
+import java.util.Random;
 
 @Repository
 public class QuestRepository {
@@ -44,5 +45,15 @@ public class QuestRepository {
 
     public List<Quest> getActiveMonthlyQuests() {
         return em.createQuery("select q from Quest q where q.isActive = true and q.questType = 2", Quest.class).getResultList();
+    }
+
+    public Quest getRecommendQuest() {
+        List<Quest> quests = em.createQuery("select q from Quest q where q.isActive = true", Quest.class).getResultList();
+
+        Random random = new Random();
+        random.setSeed(System.currentTimeMillis());
+        int randomIndex = random.nextInt(quests.size());
+
+        return quests.get(randomIndex);
     }
 }

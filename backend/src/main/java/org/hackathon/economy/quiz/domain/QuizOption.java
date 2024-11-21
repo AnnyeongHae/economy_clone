@@ -12,20 +12,22 @@ import lombok.Setter;
 public class QuizOption {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
+    @Column(name = "option_pk") // 매핑 이름 명시
     private Long optionPk;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_pk", nullable = false)
-    @JsonIgnore // 직렬화할 때, Quiz → QuizOption → Quiz → QuizOption 으로 순환이 발생합니다. ==> @JsonIgnore를 추가하여 순환 참조를 방지할 수 있습니다.
+    @JsonIgnore
     private Quiz quiz;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "option_id") // 정확한 컬럼 이름 지정
     private Long optionId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "option_text")
     private String optionText;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_correct")
     private Boolean isCorrect;
 }
+

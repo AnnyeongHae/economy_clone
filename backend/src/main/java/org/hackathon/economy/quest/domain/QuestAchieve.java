@@ -16,7 +16,7 @@ import java.util.List;
 public class QuestAchieve {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 수정된 부분
+    @GeneratedValue// 수정된 부분
     private Long achieveNo;
 
     @Column(nullable = false)
@@ -26,7 +26,7 @@ public class QuestAchieve {
     @JoinColumn(name = "member_no")
     private Member member;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quest_no") // 외래 키를 명시적으로 설정
     private Quest quest;
 }

@@ -1,12 +1,12 @@
 <script setup>
+import DashQuiz from './components/DashQuiz.vue';
 import MiniStatisticsCard from '@/examples/Cards/MiniStatisticsCard.vue';
-import InterestChart from '@/examples/Charts/InterestChart.vue';
-import ActiveUsersChart from '@/examples/Charts/ActiveUsersChart.vue';
 import Carousel from './components/Carousel.vue';
 import TodayQuest from './components/TodayQuest.vue';
 import accountApi from '@/api/accountApi';
 import memberApi from '@/api/memberApi';
 import { ref, onMounted, computed } from 'vue';
+import InterestChart from '@/examples/Charts/InterestChart.vue';
 
 const now = new Date();
 const hours = now.getHours();
@@ -14,45 +14,34 @@ const minutes = now.getMinutes();
 
 // 계정 관련 상태
 const accountObject = ref({
-  accountBalance: 0,
-  accountRate: 0,
+    accountBalance: 0,
+    accountRate: 0,
 });
 const myAccount = computed(() => accountObject.value);
 
 // 회원 관련 상태
 const memberObject = ref({
-  memberName: ''
+    memberName: '',
 });
 const myMember = computed(() => memberObject.value);
 
 const myRate = computed(() => myAccount.value.accountRate);
 
 // 이자 계산 관련
-const myTotalInterest = computed(
-  () => myAccount.value.accountBalance * (myAccount.value.accountRate / 100 / 365)
-);
-const myCurrentInterest = computed(
-  () =>
-    myAccount.value.accountBalance *
-    (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60)) *
-    ((hours * 60 + minutes) * 60)
-);
-const myInterest = computed(
-  () =>
-    myAccount.value.accountBalance *
-    (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60))
-);
+const myTotalInterest = computed(() => myAccount.value.accountBalance * (myAccount.value.accountRate / 100 / 365));
+const myCurrentInterest = computed(() => myAccount.value.accountBalance * (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60)) * ((hours * 60 + minutes) * 60));
+const myInterest = computed(() => myAccount.value.accountBalance * (myAccount.value.accountRate / 100 / 365 / (24 * 60 * 60)));
 const countInterest = ref(0);
 
 // 이자 카운트 시작
 const startInterestCount = () => {
-  const interval = setInterval(() => {
-    if (countInterest.value < myTotalInterest.value) {
-      countInterest.value += myInterest.value;
-    } else {
-      clearInterval(interval);
-    }
-  }, 1000);
+    const interval = setInterval(() => {
+        if (countInterest.value < myTotalInterest.value) {
+            countInterest.value += myInterest.value;
+        } else {
+            clearInterval(interval);
+        }
+    }, 1000);
 };
 
 // 팁 관련
@@ -109,26 +98,26 @@ const dailyTip = ref(getRandomTip());
 
 // 데이터 로드
 const load = async () => {
-  try {
-    // 계정 정보 로드
-    const accountData = await accountApi.findAccount();
-    accountObject.value = accountData;
-    console.log('accountObject: ', accountObject.value);
-    console.log('accountObject.accountBalance: ', myAccount.value.accountRate);
+    try {
+        // 계정 정보 로드
+        const accountData = await accountApi.findAccount();
+        accountObject.value = accountData;
+        console.log('accountObject: ', accountObject.value);
+        console.log('accountObject.accountBalance: ', myAccount.value.accountRate);
 
-    // 회원 정보 로드
-    const memberData = await memberApi.getMember();
-    memberObject.value = {
-      memberName: memberData.name || memberData.memberName
-    };
-    console.log('memberObject: ', memberObject.value);
-    console.log('member name: ', myMember.value.memberName);
+        // 회원 정보 로드
+        const memberData = await memberApi.getMember();
+        memberObject.value = {
+            memberName: memberData.name || memberData.memberName,
+        };
+        console.log('memberObject: ', memberObject.value);
+        console.log('member name: ', myMember.value.memberName);
 
-    // 이자 초기화
-    countInterest.value = myCurrentInterest.value;
-  } catch (error) {
-    console.error('Error loading data: ', error);
-  }
+        // 이자 초기화
+        countInterest.value = myCurrentInterest.value;
+    } catch (error) {
+        console.error('Error loading data: ', error);
+    }
 };
 
 onMounted(() => {
@@ -183,24 +172,10 @@ onMounted(() => {
                 </div>
 
                 <!-- 중단 차트와 캐러셀 -->
-                <div class="row" style="margin-top: 25px;">
+                <div class="row" style="margin-top: 25px">
                     <div class="col-lg-5 col-md-">
                         <div class="card z-index-2 chart-card">
-                            <ActiveUsersChart
-                                id="chart-line"
-                                title="Sales Overview"
-                                description="<i class='fa fa-arrow-up text-success'></i>
-                                <span class='font-weight-bold'>4% more</span> in 2021"
-                                :chart="{
-                                    labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                                    datasets: [
-                                        {
-                                            label: 'Mobile Apps',
-                                            data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-                                        },
-                                    ],
-                                }"
-                            />
+                            <dash-quiz />
                         </div>
                     </div>
                     <div class="col-lg-7">
@@ -210,17 +185,17 @@ onMounted(() => {
 
                 <!-- 하단 카드들 -->
                 <div class="row mt-4">
-   <div class="col-lg-6">
-       <div class="card h-100" style="margin-bottom: 0;">
-           <InterestChart/>
-       </div>
-   </div>
-   <div class="col-lg-6">
-       <div class="card h-100" style="margin-bottom: 0;">
-           <today-quest />
-       </div>
-   </div>
-</div>
+                    <div class="col-lg-6">
+                        <div class="card h-100" style="margin-bottom: 0">
+                            <InterestChart />
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card h-100" style="margin-bottom: 0">
+                            <today-quest />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -228,21 +203,21 @@ onMounted(() => {
 
 <style scoped>
 .card {
-  height: 100%;
+    height: 100%;
 }
 
 /* 특정 차트 카드에만 높이 100% 적용 */
 .chart-card {
-  height: 100%;
+    height: 100%;
 }
 
 /* carousel 컴포넌트가 부모 높이를 상속받도록 설정 */
 :deep(.carousel) {
-  height: 100%;
+    height: 100%;
 }
 
 /* 차트 컨테이너가 카드 높이를 채우도록 설정 */
 :deep(.chart-container) {
-  height: 100% !important;
+    height: 100% !important;
 }
 </style>

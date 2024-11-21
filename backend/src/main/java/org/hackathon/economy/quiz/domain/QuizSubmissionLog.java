@@ -13,22 +13,23 @@ import java.sql.Timestamp;
 public class QuizSubmissionLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
+    @Column(name= "log_id", nullable = false)
     private Long logId;
 
-    @Column(nullable = false)
+    @Column(name="member_no", nullable = false)
     private Long memberNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_pk", nullable = false)
     private Quiz quiz;
 
-    @Column(nullable = false)
+    @Column(name="is_correct", nullable = false)
     private Boolean isCorrect;
 
-    @Column(nullable = true)
+    @Column(name="user_answer", nullable = true)
     private Integer userAnswer;
 
-    @Column(nullable = false)
+    @Column(name="submission_time", nullable = false)
     private Timestamp submissionTime;
 }

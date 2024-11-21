@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "daily_quiz")
 public class DailyQuiz {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="daily_quizid")
+    @GeneratedValue
+    @Column(name="daily_quiz_id")
     private Long dailyQuizId;
 
     @OneToOne(fetch = FetchType.LAZY)

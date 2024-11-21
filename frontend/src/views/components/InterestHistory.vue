@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { ref, onMounted } from 'vue';
 import dailyInterestApi from '@/api/dailyInterestApi'; // API 호출 모듈 import
 
@@ -50,7 +50,7 @@ const fetchInterestData = async () => {
 onMounted(() => {
   fetchInterestData();
 });
-</script>
+</script> -->
 
 <template>
   <div class="interest-history">

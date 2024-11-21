@@ -85,31 +85,26 @@ async function depositAmount() {
   }
 }
 
-// 출금 기능 함수
-const withdraw = () => {
-  alert('출금 기능이 호출되었습니다.');
-};
 
+// const deposit = async () => {
+//   const amount = parseFloat(prompt('입금할 금액을 입력하세요:'));
+//   if (!amount || isNaN(amount) || Number(amount) <= 0) {
+//     alert('유효한 금액을 입력해주세요.');
+//     return;
+//   }
 
-const deposit = async () => {
-  const amount = parseFloat(prompt('입금할 금액을 입력하세요:'));
-  if (!amount || isNaN(amount) || Number(amount) <= 0) {
-    alert('유효한 금액을 입력해주세요.');
-    return;
-  }
-
-  try {
-    const response = await accountApi.deposit(Number(amount));
-    const updatedAccount = response.data; // 서버에서 반환된 최신 계좌 정보
-    accountObject.value = updatedAccount; // 최신 데이터로 업데이트
-    alert(
-      `입금 성공! 현재 잔액: ${updatedAccount.accountBalance.toLocaleString()}원`
-    );
-  } catch (error) {
-    const errorMessage = error.response?.data || '입금에 실패했습니다.';
-    alert(errorMessage);
-  }
-};
+//   try {
+//     const response = await accountApi.deposit(Number(amount));
+//     const updatedAccount = response.data; // 서버에서 반환된 최신 계좌 정보
+//     accountObject.value = updatedAccount; // 최신 데이터로 업데이트
+//     alert(
+//       `입금 성공! 현재 잔액: ${updatedAccount.accountBalance.toLocaleString()}원`
+//     );
+//   } catch (error) {
+//     const errorMessage = error.response?.data || '입금에 실패했습니다.';
+//     alert(errorMessage);
+//   }
+// };
 
 // 출금 기능 함수
 const withdraw = async () => {

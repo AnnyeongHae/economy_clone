@@ -32,6 +32,7 @@ const questTypeImages = {
 const loadQuests = async () => {
     try {
         const data = await questApi.getTotalAchieve();
+        console.log("data : ", data);
         quests.value = data; // 전체 퀘스트 저장
         filteredQuests.value = data; //기본적으로 모든 데이터 표시
     } catch (error) {

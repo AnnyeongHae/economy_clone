@@ -6,6 +6,7 @@ import org.hackathon.economy.account.domain.Account;
 import org.hackathon.economy.account.service.AccountService;
 import org.hackathon.economy.member.domain.Member;
 import org.hackathon.economy.member.service.AuthenticationService;
+import org.hackathon.economy.quest.domain.Quest;
 import org.hackathon.economy.quest.domain.QuestAchieve;
 import org.hackathon.economy.quest.service.QuestAchieveService;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,10 +30,10 @@ public class QuestAchieveController {
     /* 완료된 퀘스트 조회 */
     // 전체
     @GetMapping("/total")
-    public ResponseEntity<List<QuestAchieve>> getTotal(HttpSession session) {
+    public ResponseEntity<List<Optional<Quest>>> getTotal(HttpSession session) {
         try {
             Member member = authenticationService.getAuthenticatedMember(session);
-            List<QuestAchieve> totalQuests = questAchieveService.getTotal(member);
+            List<Optional<Quest>> totalQuests = questAchieveService.getTotal(member);
             return ResponseEntity.ok(totalQuests);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);

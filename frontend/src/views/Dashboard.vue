@@ -171,17 +171,17 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <!-- 중단 차트와 캐러셀 -->
-                <div class="row" style="margin-top: 25px">
-                    <div class="col-lg-6 col-md-">
-                        <div class="card z-index-2 chart-card">
-                            <dash-quiz />
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <carousel class="h-100" />
-                    </div>
-                </div>
+        <!-- 중단 차트와 캐러셀 -->
+        <div class="row" style="margin-top: 25px">
+          <div class="col-lg-5 col-md-">
+            <div class="card z-index-2 chart-card">
+              <dash-quiz />
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <carousel class="h-100" />
+          </div>
+        </div>
 
                 <!-- 하단 카드들 -->
                 <div class="row mt-4">

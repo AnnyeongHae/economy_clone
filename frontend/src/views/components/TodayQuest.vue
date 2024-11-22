@@ -4,9 +4,11 @@ import Swal from 'sweetalert2';
 import jsQR from 'jsqr';
 import todayQuestApi from '@/api/todayQuestApi';
 import memberApi from '@/api/memberApi';
+import cardApi from '@/api/cardApi';
 
 const quests = ref([]);
 const selectedQuestType = ref(null);
+const successCounts = ref({}); // 성공 횟수 데이터를 저장
 
 const videoRef = ref(null);
 const canvasRef = ref(null);
@@ -45,10 +47,7 @@ const fetchQuests = async (type) => {
     }
     quests.value = data; // 데이터를 quests에 저장
   } catch (error) {
-    console.error(
-      '퀘스트 데이터를 가져오는 중 오류 발생:',
-      error
-    );
+    console.error('퀘스트 데이터를 가져오는 중 오류 발생:', error);
     Swal.fire(
       '에러',
       '오늘의 퀘스트 데이터를 불러오는 데 실패했습니다.',
@@ -96,10 +95,7 @@ const startQrScanner = async (questNo) => {
       },
     };
 
-    const stream =
-      await navigator.mediaDevices.getUserMedia(
-        constraints
-      );
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     if (videoRef.value) {
       videoRef.value.srcObject = stream;
       await videoRef.value.play();
@@ -107,22 +103,13 @@ const startQrScanner = async (questNo) => {
     }
   } catch (error) {
     console.error('Camera error:', error);
-    Swal.fire(
-      '에러',
-      '카메라 접근에 실패했습니다.',
-      'error'
-    );
+    Swal.fire('에러', '카메라 접근에 실패했습니다.', 'error');
     streaming.value = false;
   }
 };
 
 const scanQRCode = () => {
-  if (
-    !streaming.value ||
-    !videoRef.value ||
-    !canvasRef.value
-  )
-    return;
+  if (!streaming.value || !videoRef.value || !canvasRef.value) return;
 
   const video = videoRef.value;
   const canvas = canvasRef.value;
@@ -142,29 +129,13 @@ const scanQRCode = () => {
 
   try {
     // 비디오 프레임을 캔버스에 그림
-    context.drawImage(
-      video,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-    const imageData = context.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
     // QR 코드 스캔 시도
-    const code = jsQR(
-      imageData.data,
-      imageData.width,
-      imageData.height,
-      {
-        inversionAttempts: 'dontInvert',
-      }
-    );
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: 'dontInvert',
+    });
 
     if (code) {
       // QR 코드 발견
@@ -185,27 +156,16 @@ const verifyQrCode = async (qrData, questNo) => {
     console.log('Scanned QR code:', qrData); // 디버깅용
     console.log('Quest No:', questNo);
 
-    const response = await fetch(
-      `/api/qr/verify/${qrData}/${questNo}`,
-      {
-        method: 'POST',
-        credentials: 'include',
-      }
-    );
+    const response = await fetch(`/api/qr/verify/${qrData}/${questNo}`, {
+      method: 'POST',
+      credentials: 'include',
+    });
 
     if (response.ok) {
-      Swal.fire(
-        '성공',
-        'QR 코드 인증이 완료되었습니다.',
-        'success'
-      );
+      Swal.fire('성공', 'QR 코드 인증이 완료되었습니다.', 'success');
     } else {
       const error = await response.text();
-      Swal.fire(
-        '실패',
-        error || 'QR 코드 인증에 실패했습니다.',
-        'error'
-      );
+      Swal.fire('실패', error || 'QR 코드 인증에 실패했습니다.', 'error');
     }
   } catch (error) {
     console.error('Verification error:', error);
@@ -215,18 +175,12 @@ const verifyQrCode = async (qrData, questNo) => {
 
 const stopQrScanner = () => {
   if (videoRef.value?.srcObject) {
-    videoRef.value.srcObject
-      .getTracks()
-      .forEach((track) => track.stop());
+    videoRef.value.srcObject.getTracks().forEach((track) => track.stop());
   }
   streaming.value = false;
 };
 
-const handleQuestAchieve = async (
-  questContent,
-  questNo,
-  isQr
-) => {
+const handleQuestAchieve = async (questContent, questNo, isQr) => {
   try {
     const result = await Swal.fire({
       title: `${questContent} 인증`,
@@ -252,19 +206,12 @@ const handleQuestAchieve = async (
         const memberNo = memberData?.memberNo; // 회원 ID 추출
 
         if (!memberNo) {
-          Swal.fire(
-            '에러',
-            '로그인 정보를 확인할 수 없습니다.',
-            'error'
-          );
+          Swal.fire('에러', '로그인 정보를 확인할 수 없습니다.', 'error');
           return;
         }
 
         // 거래내역 인증 요청
-        const response =
-          await todayQuestApi.processQuestAchievements(
-            memberNo
-          );
+        const response = await todayQuestApi.processQuestAchievements(memberNo);
 
         // 서버 응답 확인
         if (response === 'success') {
@@ -274,21 +221,24 @@ const handleQuestAchieve = async (
             'success'
           );
         } else {
-          Swal.fire(
-            '알림',
-            '완료된 퀘스트가 없습니다.',
-            'info'
-          );
+          Swal.fire('알림', '완료된 퀘스트가 없습니다.', 'info');
         }
       }
     }
   } catch (error) {
     console.error('인증 오류:', error);
-    Swal.fire(
-      '에러',
-      '처리 중 오류가 발생했습니다.',
-      'error'
-    );
+    Swal.fire('에러', '처리 중 오류가 발생했습니다.', 'error');
+  }
+};
+
+// 성공 횟수 데이터 가져오기
+const fetchSuccessCounts = async () => {
+  try {
+    const counts = await cardApi.getCount(); // getCount 호출
+    console.log('Success Counts:', counts); // 가져온 데이터를 콘솔에 출력
+    successCounts.value = counts; // 데이터를 상태에 저장
+  } catch (error) {
+    console.error('Error fetching success counts:', error);
   }
 };
 
@@ -318,7 +268,8 @@ const handleQuestAchieve = async (
 // };
 
 onMounted(() => {
-  fetchQuests(null);
+  fetchQuests(null); // 전체 퀘스트 데이터 가져오기
+  fetchSuccessCounts(); // 성공 횟수 데이터 가져오기
 });
 
 onUnmounted(() => {
@@ -331,14 +282,13 @@ onUnmounted(() => {
     <div
       class="card-header pb-0 d-flex justify-content-between align-items-center"
     >
-      <h6>오늘의 퀘스트</h6>
+      <h6>진행중인 퀘스트</h6>
       <!-- 퀘스트 타입 필터링 버튼 -->
       <div class="btn-group">
         <button
           class="btn btn-outline-secondary btn-xs py-1 px-3 custom-hover"
           :class="{
-            'btn-success text-white':
-              selectedQuestType === null,
+            'btn-success text-white': selectedQuestType === null,
           }"
           @click="toggleQuestType(null)"
         >
@@ -348,8 +298,7 @@ onUnmounted(() => {
         <button
           class="btn btn-outline-secondary btn-xs py-1 px-3 custom-hover"
           :class="{
-            'btn-success text-white':
-              selectedQuestType === 1,
+            'btn-success text-white': selectedQuestType === 1,
           }"
           @click="toggleQuestType(1)"
         >
@@ -358,8 +307,7 @@ onUnmounted(() => {
         <button
           class="btn btn-outline-secondary btn-xs py-1 px-3 custom-hover"
           :class="{
-            'btn-success text-white':
-              selectedQuestType === 2,
+            'btn-success text-white': selectedQuestType === 2,
           }"
           @click="toggleQuestType(2)"
         >
@@ -389,18 +337,19 @@ onUnmounted(() => {
               </th>
               <th
                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+              >
+                성공 횟수/전체 횟수
+              </th>
+              <th
+                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
               ></th>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="quest in filteredQuests"
-              :key="quest.questNo"
-            >
+            <tr v-for="quest in filteredQuests" :key="quest.questNo">
               <td>
                 <div class="d-flex px-2 py-1">
                   <div>
-                    <!-- 퀘스트 종류에 따른 이미지 -->
                     <img
                       :src="
                         questTypeImages[quest.questType] ||
@@ -410,10 +359,7 @@ onUnmounted(() => {
                       alt="quest"
                     />
                   </div>
-                  <div
-                    class="d-flex flex-column justify-content-center"
-                  >
-                    <!-- 퀘스트 내용 -->
+                  <div class="d-flex flex-column justify-content-center">
                     <h6 class="mb-0 text-sm">
                       {{ quest.questContent }}
                     </h6>
@@ -421,9 +367,7 @@ onUnmounted(() => {
                 </div>
               </td>
               <td>
-                <p
-                  class="text-xs font-weight-bold mb-0 text-secondary"
-                >
+                <p class="text-xs font-weight-bold mb-0 text-secondary">
                   {{
                     quest.questType === 0
                       ? '일간'
@@ -434,10 +378,15 @@ onUnmounted(() => {
                 </p>
               </td>
               <td class="align-middle text-center">
-                <span
-                  class="text-secondary text-xs font-weight-bold"
-                  >{{ quest.questPoint }}P</span
-                >
+                <span class="text-secondary text-xs font-weight-bold">
+                  {{ quest.questPoint }}P
+                </span>
+              </td>
+              <td class="align-middle text-center">
+                <span class="text-secondary text-xs font-weight-bold">
+                  {{ successCounts[quest.questNo] || 0 }} /
+                  {{ quest.questCount }}
+                </span>
               </td>
               <td class="align-middle text-center text-sm">
                 <button
@@ -455,9 +404,7 @@ onUnmounted(() => {
               </td>
             </tr>
             <tr v-if="filteredQuests.length === 0">
-              <td colspan="4" class="text-center">
-                해당 퀘스트가 없습니다.
-              </td>
+              <td colspan="5" class="text-center">해당 퀘스트가 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -468,18 +415,11 @@ onUnmounted(() => {
   <!-- QR 스캐너 오버레이 -->
   <div v-if="streaming" class="qr-scanner-overlay">
     <div class="qr-scanner-container">
-      <video
-        ref="videoRef"
-        autoplay
-        playsinline
-        class="qr-video"
-      ></video>
+      <video ref="videoRef" autoplay playsinline class="qr-video"></video>
       <canvas ref="canvasRef" class="qr-canvas"></canvas>
       <div class="scanner-guide"></div>
       <div class="scanner-controls">
-        <button @click="stopQrScanner" class="scanner-btn">
-          닫기
-        </button>
+        <button @click="stopQrScanner" class="scanner-btn">닫기</button>
       </div>
     </div>
   </div>
@@ -625,11 +565,7 @@ onUnmounted(() => {
 
 /* SweetAlert2 확인 버튼 */
 .swal-confirm-btn {
-  background: linear-gradient(
-    90deg,
-    #40a578,
-    #3085d6
-  ); /* 그라디언트 색상 */
+  background: linear-gradient(90deg, #40a578, #3085d6); /* 그라디언트 색상 */
   color: white;
   font-size: 14px;
   padding: 10px 20px;
@@ -641,21 +577,13 @@ onUnmounted(() => {
 }
 
 .swal-confirm-btn:hover {
-  background: linear-gradient(
-    90deg,
-    #3085d6,
-    #40a578
-  ); /* 호버 시 색상 반전 */
+  background: linear-gradient(90deg, #3085d6, #40a578); /* 호버 시 색상 반전 */
   opacity: 0.9;
 }
 
 /* SweetAlert2 취소 버튼 */
 .swal-cancel-btn {
-  background: linear-gradient(
-    90deg,
-    #d33,
-    #b52c2c
-  ); /* 그라디언트 색상 */
+  background: linear-gradient(90deg, #d33, #b52c2c); /* 그라디언트 색상 */
   color: white;
   font-size: 14px;
   padding: 10px 20px;
@@ -666,11 +594,7 @@ onUnmounted(() => {
 }
 
 .swal-cancel-btn:hover {
-  background: linear-gradient(
-    90deg,
-    #b52c2c,
-    #d33
-  ); /* 호버 시 색상 반전 */
+  background: linear-gradient(90deg, #b52c2c, #d33); /* 호버 시 색상 반전 */
   opacity: 0.9;
 }
 </style>

@@ -90,6 +90,14 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
 
+    @PostMapping("/report")
+    public ResponseEntity<Long> authenticate(HttpSession session){
+        System.out.println("session = " + session);
+        System.out.println("session.getAttribute(\"memberEmail\") = " + session.getAttribute("memberEmail"));
+        Long accountNo = authenticationService.getAccountNo(session);
+        return ResponseEntity.ok(accountNo);
+    }
+
     //로그아웃
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpSession session) {

@@ -4,6 +4,7 @@ import org.hackathon.economy.account.domain.DailyInterest;
 import org.hackathon.economy.report.domain.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,19 +12,15 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
-public interface ReportRepository extends JpaRepository<DailyInterest, String> {
-
-    // 멤버 점수 및 등급 조회
-    @Query(value = "SELECT m.member_name, m.member_grade, m.member_point FROM MEMBER m JOIN ACCOUNT a ON m.member_no = a.member_no WHERE a.account_no = :accountNo", nativeQuery = true)
+public interface ReportRepository extends JpaRepository<DailyInterest, Long> { // String -> Long 변경
+    @Query(value = "SELECT m.member_name, m.member_grade, m.member_point FROM member m JOIN account a ON m.member_no = a.member_no WHERE a.account_no = :accountNo", nativeQuery = true)
     List<Object[]> findMemberGradeAndScoreByAccountNo(@Param("accountNo") Long accountNo);
 
-    // 전체 이자내역 페이징
-    @Query("SELECT di FROM DailyInterest di JOIN FETCH di.account a " +
-            "WHERE a.accountNo = :accountNo AND di.todayDate BETWEEN :startDate AND :endDate " +
-            "ORDER BY di.todayDate DESC")
+    @Query("SELECT di FROM DailyInterest di JOIN FETCH di.account a WHERE a.accountNo = :accountNo AND di.todayDate BETWEEN :startDate AND :endDate ORDER BY di.todayDate DESC")
     Page<DailyInterest> findAllInterestHistory(
             @Param("accountNo") Long accountNo,
             @Param("startDate") LocalDate startDate,
@@ -31,194 +28,110 @@ public interface ReportRepository extends JpaRepository<DailyInterest, String> {
             Pageable pageable
     );
 
-    // 일간 데이터 조회
-    @Query("SELECT NEW org.hackathon.economy.report.domain.dto.ChartDataDTO(" +
-            "di.todayDate, " +
-            "SUM(di.todayInterest), " +
-            "AVG(di.todayBalance), " +
-            "COUNT(di)) " +
-            "FROM DailyInterest di " +
-            "WHERE di.account.accountNo = :accountNo " +
-            "AND di.todayDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY di.todayDate ORDER BY di.todayDate"
-    )
-    List<ChartDataDTO> getDailyChartData(
-            @Param("accountNo") Long accountNo,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
-    );
-
-    // 일간 통합 데이터 쿼리 수정
     @Query(value = """
-SELECT 
-    targetDate AS date, 
-    SUM(totalInterest) AS totalInterest, 
-    AVG(avgBalance) AS avgBalance, 
-    COUNT(DISTINCT targetDate) AS totalDays, 
-    COALESCE(SUM(questCount), 0) AS questCount,
-    COALESCE(SUM(totalPoints), 0) AS totalScore  
-FROM (
     SELECT 
-        DATE(di.todayDate) AS targetDate,
-        di.todayInterest AS totalInterest,
-        di.todayBalance AS avgBalance,
-        COALESCE(qa.questCount, 0) AS questCount,
-        COALESCE(q.totalPoints, 0) AS totalPoints
-    FROM DAILY_INTEREST di 
-    JOIN ACCOUNT a ON di.account_no = a.accountNo 
-    JOIN MEMBER m ON a.member_no = m.memberNo 
-    LEFT JOIN ( 
-        SELECT 
-            qa.member_no, 
-            DATE(qa.achieveDatetime) AS achieveDate, 
-            COUNT(*) AS questCount
-        FROM QUEST_ACHEIVE qa
-        GROUP BY qa.member_no, DATE(qa.achieveDatetime) 
-    ) qa ON m.memberNo = qa.member_no 
-        AND DATE(di.todayDate) = qa.achieveDate 
-    LEFT JOIN (
-        SELECT 
-            qa.member_no,
-            DATE(qa.achieveDatetime) AS achieveDate,
-            SUM(q.questPoint) AS totalPoints
-        FROM QUEST_ACHEIVE qa
-        JOIN QUEST q ON  qa.quest_no = q.questNo  
-        GROUP BY qa.member_no, DATE(qa.achieveDatetime)
-    ) q ON m.memberNo = q.member_no 
-        AND DATE(di.todayDate) = q.achieveDate
-    WHERE di.account_no = :accountNo 
-    AND di.todayDate BETWEEN :startDate AND :endDate 
-) AS dailyData
-GROUP BY targetDate 
-ORDER BY targetDate""",
-            nativeQuery = true)
+        DATE(di.today_date) as date,
+        COALESCE(CAST(SUM(di.today_interest) as DECIMAL(10,2)), 0.00) as totalInterest,
+        COALESCE(CAST(AVG(di.today_balance) as DECIMAL(10,2)), 0.00) as avgBalance,
+        COALESCE(COUNT(DISTINCT DATE(di.today_date)), 0) as totalDays,
+        COALESCE(COUNT(DISTINCT qa.achieve_no), 0) as questCount,
+        COALESCE(SUM(q.quest_point), 0) as totalScore
+    FROM daily_interest di
+    LEFT JOIN account a ON di.account_no = a.account_no
+    LEFT JOIN member m ON a.member_no = m.member_no
+    LEFT JOIN quest_achieve qa ON m.member_no = qa.member_no 
+        AND DATE(di.today_date) = DATE(qa.achieve_date_time)
+    LEFT JOIN quest q ON qa.quest_no = q.quest_no
+    WHERE di.account_no = :accountNo
+        AND di.today_date BETWEEN :startDate AND :endDate
+    GROUP BY DATE(di.today_date)
+    ORDER BY date ASC
+    """, nativeQuery = true)
     List<Object[]> getDailyIntegratedData(
             @Param("accountNo") Long accountNo,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
 
-    // 주간 통합 데이터 쿼리
     @Query(value = """
-SELECT 
-    MIN(targetDate) AS date, 
-    SUM(totalInterest) AS totalInterest, 
-    AVG(avgBalance) AS avgBalance, 
-    COUNT(DISTINCT targetDate) AS totalDays, 
-    COALESCE(SUM(questCount), 0) AS questCount,
-    COALESCE(SUM(totalPoints), 0) AS totalScore
-FROM (
     SELECT 
-        DATE(di.todayDate) AS targetDate,
-        YEARWEEK(di.todayDate, 1) AS weekGroup,
-        di.todayInterest AS totalInterest,
-        di.todayBalance AS avgBalance,
-        COALESCE(qa.questCount, 0) AS questCount,
-        COALESCE(q.totalPoints, 0) AS totalPoints
-    FROM DAILY_INTEREST di 
-    JOIN ACCOUNT a ON di.account_no = a.accountNo 
-    JOIN MEMBER m ON a.member_no = m.memberNo 
-    LEFT JOIN ( 
-        SELECT 
-            qa.member_no, 
-            DATE(qa.achieveDatetime) AS achieveDate, 
-            COUNT(*) AS questCount
-        FROM QUEST_ACHEIVE qa
-        GROUP BY qa.member_no, DATE(qa.achieveDatetime) 
-    ) qa ON m.memberNo = qa.member_no 
-        AND DATE(di.todayDate) = qa.achieveDate 
-    LEFT JOIN (
-        SELECT 
-            qa.member_no,
-            DATE(qa.achieveDatetime) AS achieveDate,
-            SUM(q.questPoint) AS totalPoints
-        FROM QUEST_ACHEIVE qa
-        JOIN QUEST q ON  qa.quest_no = q.questNo  
-        GROUP BY qa.member_no, DATE(qa.achieveDatetime)
-    ) q ON m.memberNo = q.member_no 
-        AND DATE(di.todayDate) = q.achieveDate
-    WHERE di.account_no = :accountNo 
-    AND di.todayDate BETWEEN :startDate AND :endDate 
-) AS weeklyData
-GROUP BY weekGroup
-ORDER BY date""",
-            nativeQuery = true)
+        MIN(di.today_date) as date,
+        COALESCE(CAST(SUM(di.today_interest) as DECIMAL(10,2)), 0.00) as totalInterest,
+        COALESCE(CAST(AVG(di.today_balance) as DECIMAL(10,2)), 0.00) as avgBalance,
+        COALESCE(COUNT(DISTINCT DATE(di.today_date)), 0) as totalDays,
+        COALESCE(COUNT(DISTINCT qa.achieve_no), 0) as questCount,
+        COALESCE(SUM(q.quest_point), 0) as totalScore
+    FROM daily_interest di
+    LEFT JOIN account a ON di.account_no = a.account_no
+    LEFT JOIN member m ON a.member_no = m.member_no
+    LEFT JOIN quest_achieve qa ON m.member_no = qa.member_no 
+        AND YEARWEEK(di.today_date, 1) = YEARWEEK(qa.achieve_date_time, 1)
+    LEFT JOIN quest q ON qa.quest_no = q.quest_no
+    WHERE di.account_no = :accountNo
+        AND di.today_date BETWEEN :startDate AND :endDate
+    GROUP BY YEARWEEK(di.today_date, 1)
+    ORDER BY date ASC
+    """, nativeQuery = true)
     List<Object[]> getWeeklyIntegratedData(
             @Param("accountNo") Long accountNo,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
 
-    // 월간 통합 데이터 쿼리
     @Query(value = """
-WITH monthlyData AS (
     SELECT 
-        DATE(di.todayDate) AS targetDate,
-        di.todayInterest,
-        di.todayBalance,
-        COALESCE(qa.questCount, 0) AS questCount,
-        COALESCE(q.totalPoints, 0) AS totalPoints,
-        LAST_DAY(di.todayDate) AS lastDayOfMonth
-    FROM DAILY_INTEREST di 
-    JOIN ACCOUNT a ON di.account_no = a.accountNo 
-    JOIN MEMBER m ON a.member_no = m.memberNo 
-    LEFT JOIN ( 
-        SELECT 
-            qa.member_no, 
-            DATE(qa.achieveDatetime) AS achieveDate, 
-            COUNT(*) AS questCount
-        FROM QUEST_ACHEIVE qa
-        GROUP BY qa.member_no, DATE(qa.achieveDatetime) 
-    ) qa ON m.memberNo = qa.member_no 
-        AND DATE(di.todayDate) = qa.achieveDate 
-    LEFT JOIN (
-        SELECT 
-            qa.member_no,
-            DATE(qa.achieveDatetime) AS achieveDate,
-            SUM(q.questPoint) AS totalPoints
-        FROM QUEST_ACHEIVE qa
-        JOIN QUEST q ON  qa.quest_no = q.questNo  
-        GROUP BY qa.member_no, DATE(qa.achieveDatetime)
-    ) q ON m.memberNo = q.member_no 
-        AND DATE(di.todayDate) = q.achieveDate
-    WHERE di.account_no = :accountNo 
-    AND di.todayDate BETWEEN :startDate AND :endDate 
-)
-SELECT 
-    lastDayOfMonth AS date,
-    SUM(todayInterest) AS totalInterest,
-    AVG(todayBalance) AS avgBalance,
-    COUNT(DISTINCT targetDate) AS totalDays,
-    COALESCE(SUM(questCount), 0) AS questCount,
-    COALESCE(SUM(totalPoints), 0) AS totalScore
-FROM monthlyData
-GROUP BY lastDayOfMonth
-ORDER BY date""",
-            nativeQuery = true)
+        MAX(LAST_DAY(di.today_date)) as date,
+        COALESCE(CAST(SUM(di.today_interest) as DECIMAL(10,2)), 0.00) as totalInterest,
+        COALESCE(CAST(AVG(di.today_balance) as DECIMAL(10,2)), 0.00) as avgBalance,
+        COALESCE(COUNT(DISTINCT DATE(di.today_date)), 0) as totalDays,
+        COALESCE(COUNT(DISTINCT qa.achieve_no), 0) as questCount,
+        COALESCE(SUM(q.quest_point), 0) as totalScore
+    FROM daily_interest di
+    LEFT JOIN account a ON di.account_no = a.account_no
+    LEFT JOIN member m ON a.member_no = m.member_no
+    LEFT JOIN quest_achieve qa ON m.member_no = qa.member_no 
+        AND YEAR(di.today_date) = YEAR(qa.achieve_date_time) 
+        AND MONTH(di.today_date) = MONTH(qa.achieve_date_time)
+    LEFT JOIN quest q ON qa.quest_no = q.quest_no
+    WHERE di.account_no = :accountNo
+        AND di.today_date BETWEEN :startDate AND :endDate
+    GROUP BY YEAR(di.today_date), MONTH(di.today_date)
+    ORDER BY MAX(di.today_date) ASC
+    """, nativeQuery = true)
     List<Object[]> getMonthlyIntegratedData(
             @Param("accountNo") Long accountNo,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
 
-    // 특정 날짜의 퀘스트 상세 내역 조회
     @Query(value = """
     SELECT 
-        q.questContent,
-        q.questPoint,
-        qa.achieveDatetime,
-        q.questType
-    FROM ACCOUNT a
-    JOIN MEMBER m ON a.member_no = m.memberNo
-    JOIN QUEST_ACHEIVE qa ON m.memberNo = qa.member_no
-    JOIN QUEST q ON  qa.quest_no = q.questNo
-    WHERE a.accountNo = :accountNo
-    AND DATE(qa.achieveDatetime) = :achieveDate
-    ORDER BY qa.achieveDatetime DESC, q.questType ASC
+        q.quest_content,
+        q.quest_point,
+        qa.achieve_date_time,
+        q.quest_type
+    FROM account a
+    LEFT JOIN member m ON a.member_no = m.member_no
+    LEFT JOIN quest_achieve qa ON m.member_no = qa.member_no
+    LEFT JOIN quest q ON qa.quest_no = q.quest_no
+    WHERE a.account_no = :accountNo
+        AND DATE(qa.achieve_date_time) = :achieveDate
+    ORDER BY qa.achieve_date_time DESC, q.quest_type ASC
     """, nativeQuery = true)
     List<Object[]> findQuestDetailsByDate(
             @Param("accountNo") Long accountNo,
             @Param("achieveDate") String achieveDate
     );
 
+    @Query(value = """
+    SELECT COUNT(*) 
+    FROM daily_interest di
+    WHERE di.account_no = :accountNo 
+    AND di.today_date BETWEEN :startDate AND :endDate
+    """, nativeQuery = true)
+    Long countDailyInterestData(
+            @Param("accountNo") Long accountNo,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

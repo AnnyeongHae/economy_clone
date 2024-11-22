@@ -1,4 +1,3 @@
-J
 <template>
     <div class="card card-carousel overflow-hidden h-100 p-0">
         <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">

@@ -98,7 +98,7 @@ onMounted(() => {
 }
 
 .quiz-prompt {
-    font-size: 23px;
+    font-size: 25px;
     font-weight: bold;
     margin-top: 20px;
     margin-bottom: 25px;
